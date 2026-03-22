@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Management LinkedList Multiple Lists</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f5f5;
+            padding: 30px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        input,
+        select,
+        button {
+            padding: 6px 10px;
+            margin: 5px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .node {
+            display: inline-block;
+            background: brown;
+            color: white;
+            border-radius: 10px;
+            padding: 10px;
+            min-width: 80px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .node small {
+            display: block;
+            margin-top: 5px;
+            font-size: 11px;
+            background: #eee;
+            color: black;
+            border-radius: 4px;
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 8px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .list-title {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Management LinkedList (Multiple Lists)</h2>
+
+    <div class="section">
+        New List Name:
+        <input type="text" id="newListName">
+        <button onclick="createList()">Create List</button>
+    </div>
+
+    <div class="section">
+        Select List:
+        <select id="listSelect"></select>
+        <button onclick="deleteList()">Delete List</button>
+    </div>
+
+    <div class="section">
+        Data:
+        <input type="text" id="dataInput">
+
+        Index:
+        <input type="number" id="indexInput" value="0" min="0">
+
+        <br>
+
+        <button onclick="push()">push</button>
+        <button onclick="pop()">pop</button>
+        <button onclick="unshift()">unshift</button>
+        <button onclick="shift()">shift</button>
+        <button onclick="getNode()">get</button>
+        <button onclick="setNode()">set</button>
+        <button onclick="insert()">insert</button>
+        <button onclick="removeNode()">remove</button>
+    </div>
+
+    <div class="section">
+        <b>Result:</b>
+        <div id="result"></div>
+    </div>
+
+    <div class="section">
+        <b>LinkedList Structure:</b>
+        <div id="displayArea"></div>
+    </div>
+
+    <script>
+
+        // Node 
+        class Node {
+            constructor(data) {
+                this.data = data
+                this.next = null
+            }
+        }
+
+        // LinkedList (จำกัด 5 node)
+        class LinkedList {
+            constructor() {
+                this.head = null
+                this.size = 0
+                this.maxSize = 5   // จำกัดสูงสุด 5
+            }
+
+            push(data) {
+                if (this.size >= this.maxSize) return false
+
+                const node = new Node(data)
+                if (!this.head) {
+                    this.head = node
+                } else {
+                    let current = this.head
+                    while (current.next) {
+                        current = current.next
+                    }
+                    current.next = node
+                }
+                this.size++
+                return true
+            }
+
+            pop() {
+                if (!this.head) return null
+                if (this.size === 1) {
+                    const val = this.head.data
+                    this.head = null
+                    this.size--
+                    return val
+                }
+
+                let current = this.head
+                while (current.next.next) {
+                    current = current.next
+                }
+
+                const val = current.next.data
+                current.next = null
+                this.size--
+                return val
+            }
+
+            unshift(data) {
+                if (this.size >= this.maxSize) return false
+
+                const node = new Node(data)
+                node.next = this.head
+                this.head = node
+                this.size++
+                return true
+            }
+
+            shift() {
+                if (!this.head) return null
+                const val = this.head.data
+                this.head = this.head.next
+                this.size--
+                return val
+            }
+
+            get(index) {
+                if (index < 0 || index >= this.size) return null
+                let current = this.head
+                for (let i = 0; i < index; i++) {
+                    current = current.next
+                }
+                return current
+            }
+
+            set(index, data) {
+                const node = this.get(index)
+                if (node) {
+                    node.data = data
+                    return true
+                }
+                return false
+            }
+
+            insert(index, data) {
+                if (this.size >= this.maxSize) return false
+                if (index < 0 || index > this.size) return false
+                if (index === 0) return this.unshift(data)
+                if (index === this.size) return this.push(data)
+
+                const prev = this.get(index - 1)
+                const node = new Node(data)
+                node.next = prev.next
+                prev.next = node
+                this.size++
+                return true
+            }
+
+            remove(index) {
+                if (index < 0 || index >= this.size) return null
+                if (index === 0) return this.shift()
+
+                const prev = this.get(index - 1)
+                const removed = prev.next
+                prev.next = removed.next
+                this.size--
+                return removed.data
+            }
+
+            toArray() {
+                let arr = []
+                let current = this.head
+                while (current) {
+                    arr.push(current.data)
+                    current = current.next
+                }
+                return arr
+            }
+        }
+
+        // Multiple Lists 
+        let lists = {}
+
+        function createList() {
+            const name = document.getElementById("newListName").value
+            if (!name) return
+            lists[name] = new LinkedList()
+            updateSelect()
+            document.getElementById("newListName").value = ""
+        }
+
+        function deleteList() {
+            const name = document.getElementById("listSelect").value
+            delete lists[name]
+            updateSelect()
+            render()
+        }
+
+        function updateSelect() {
+            const select = document.getElementById("listSelect")
+            select.innerHTML = ""
+            for (let key in lists) {
+                let option = document.createElement("option")
+                option.value = key
+                option.textContent = key
+                select.appendChild(option)
+            }
+        }
+
+        function currentList() {
+            return lists[document.getElementById("listSelect").value]
+        }
+
+        // Operations 
+
+        function push() {
+            const data = dataInput.value
+            const ok = currentList()?.push(data)
+            result.innerText = ok ? `push(${data})` : "❌ List เต็มแล้ว (สูงสุด 5)"
+            render()
+        }
+
+        function pop() {
+            const val = currentList()?.pop()
+            result.innerText = `pop() → ${val}`
+            render()
+        }
+
+        function unshift() {
+            const data = dataInput.value
+            const ok = currentList()?.unshift(data)
+            result.innerText = ok ? `unshift(${data})` : "❌ List เต็มแล้ว (สูงสุด 5)"
+            render()
+        }
+
+        function shift() {
+            const val = currentList()?.shift()
+            result.innerText = `shift() → ${val}`
+            render()
+        }
+
+        function getNode() {
+            const index = parseInt(indexInput.value)
+            const node = currentList()?.get(index)
+            result.innerText = node ? `get(${index}) → ${node.data}` : "not found"
+        }
+
+        function setNode() {
+            const index = parseInt(indexInput.value)
+            const data = dataInput.value
+            currentList()?.set(index, data)
+            result.innerText = `set(${index}, ${data})`
+            render()
+        }
+
+        function insert() {
+            const index = parseInt(indexInput.value)
+            const data = dataInput.value
+            const ok = currentList()?.insert(index, data)
+            result.innerText = ok ? `insert(${index}, ${data})` : "❌ List เต็มแล้ว (สูงสุด 5)"
+            render()
+        }
+
+        function removeNode() {
+            const index = parseInt(indexInput.value)
+            const val = currentList()?.remove(index)
+            result.innerText = `remove(${index}) → ${val}`
+            render()
+        }
+
+        // Render 
+        function render() {
+            const display = document.getElementById("displayArea")
+            display.innerHTML = ""
+
+            for (let name in lists) {
+
+                const title = document.createElement("div")
+                title.className = "list-title"
+                title.textContent = name + ` (size: ${lists[name].size}/5)`
+                display.appendChild(title)
+
+                let arr = lists[name].toArray()
+
+                arr.forEach((item, i) => {
+                    const node = document.createElement("div")
+                    node.className = "node"
+                    node.innerHTML = item + `<small>${i < arr.length - 1 ? "next" : "null"}</small>`
+                    display.appendChild(node)
+
+                    if (i < arr.length - 1) {
+                        const arrow = document.createElement("span")
+                        arrow.className = "arrow"
+                        arrow.textContent = "→"
+                        display.appendChild(arrow)
+                    }
+                })
+            }
+        }
+    </script>
+
+</body>
+
+</html>

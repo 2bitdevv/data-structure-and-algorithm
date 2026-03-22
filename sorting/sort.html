@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sorting Algorithm Visualizer</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --panel: #ffffff;
+      --card: #e8e8e8;
+      --accent: #111111;
+      --accent2: #555555;
+      --text: #111111;
+      --muted: #888888;
+      --bar-default: #555555;
+      --bar-compare: #aaaaaa;
+      --bar-sorted: #111111;
+      --bar-pivot: #222222;
+      --bar-min: #222222;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'sans-serif';
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .subtitle { color: var(--muted); font-size: 0.8rem; margin-bottom: 20px; }
+
+    /* ===== Layout หลัก: sidebar + main ===== */
+    .layout {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 16px;
+    }
+
+    /* ===== Sidebar รายชื่อ Algorithm ===== */
+    .sidebar {
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .sidebar h2 {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    /* ปุ่มเลือก algorithm แต่ละตัว */
+    .algo-btn {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .algo-btn:hover { background: rgba(0,0,0,0.07); }
+
+    /* ปุ่ม algorithm ที่ถูกเลือก */
+    .algo-btn.active {
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+    }
+
+    /* ===== Main panel ===== */
+    .main { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ===== Controls: input, speed, ปุ่มต่างๆ ===== */
+    .controls {
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      border: 1px solid #ddd;
+    }
+
+    .ctrl-group { display: flex; flex-direction: column; gap: 4px; }
+    .ctrl-group label { font-size: 0.7rem; color: var(--muted); letter-spacing: 1px; }
+
+    input[type="text"], input[type="number"] {
+      background: var(--card);
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      color: var(--text);
+      padding: 7px 10px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      width: 180px;
+    }
+
+    input[type="number"] { width: 80px; }
+
+    /* ปุ่มหลัก */
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-start  { background: #111; color: white; }
+    .btn-pause  { background: #555; color: white; }
+    .btn-step   { background: #ddd; color: #111; border: 1px solid #bbb; }
+    .btn-reset  { background: #ddd; color: #111; border: 1px solid #bbb; }
+    .btn-random { background: #fff; color: #111; border: 1px solid #bbb; }
+
+    /* ===== Status bar แสดง step และคำอธิบาย ===== */
+    .status-bar {
+      background: var(--panel);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .step-badge {
+      background: var(--accent);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    #status-msg { color: var(--text); }
+
+    /* ===== Canvas พื้นที่วาด Bar Chart ===== */
+    #canvas-wrap {
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    canvas { display: block; width: 100%; }
+
+    /* ===== Legend สีของ bar ===== */
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 6px 4px 0;
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    /* ===== Step History ===== */
+    .history-panel {
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 14px;
+      border: 1px solid #ddd;
+    }
+
+    .history-panel h2 {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .history-panel h2 span { color: var(--accent); }
+
+    /* scroll container ของ rows */
+    #hist-body { max-height: 260px; overflow-y: auto; }
+
+    /* แต่ละแถว: #idx | mini boxes | message */
+    .hist-row {
+      display: grid;
+      grid-template-columns: 40px auto 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 4px;
+      border-bottom: 1px solid #eee;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .hist-row.latest { color: var(--text); }
+    .hist-row .idx { color: #999; font-size: 0.72rem; }
+
+    /* กลุ่ม mini boxes */
+    .hist-boxes { display: flex; gap: 3px; flex-wrap: nowrap; }
+
+    /* กล่องตัวเลขแต่ละตัว */
+    .hbox {
+      width: 28px; height: 28px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: bold;
+      color: #333; background: #fff; flex-shrink: 0;
+    }
+
+    /* กล่องที่ถูก highlight (compare/min/pivot) */
+    .hbox.active { background: #111; color: #fff; border-color: #111; }
+
+    /* กล่องที่เรียงแล้ว */
+    .hbox.sorted-box { background: #eee; color: #555; border-color: #bbb; }
+
+    /* message ทางขวา */
+    .hist-msg {
+      color: inherit; text-align: right;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Scrollbar */
+    #hist-body::-webkit-scrollbar { width: 4px; }
+    #hist-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+
+  </style>
+</head>
+<body>
+
+<h1>Sorting Visualizer</h1>
+<p class="subtitle">6 Algorithms · Step by Step · Step History</p>
+
+<div class="layout">
+
+  <div class="sidebar">
+    <h2>ALGORITHMS</h2>
+    <!-- สร้างปุ่มสำหรับแต่ละ algorithm ด้วย JS -->
+    <div id="algo-list"></div>
+  </div>
+
+  <!-- ===== Main Area ===== -->
+  <div class="main">
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>INPUT ARRAY</label>
+        <input type="text" id="arr-input" value="5,3,8,1,2,7,4,6" />
+      </div>
+      <!-- ปุ่มควบคุมการเล่น -->
+      <button class="btn btn-start"  onclick="startAuto()">▶ START</button>
+      <button class="btn btn-pause"  onclick="togglePause()">⏸ PAUSE</button>
+      <button class="btn btn-step"   onclick="stepOnce()">⏭ STEP</button>
+      <button class="btn btn-reset"  onclick="resetAll()">↺ RESET</button>
+      <button class="btn btn-random" onclick="randomArray()">⚄ RANDOM</button>
+    </div>
+
+    <!-- Status: แสดง step ปัจจุบัน + คำอธิบาย -->
+    <div class="status-bar">
+      <span class="step-badge" id="step-badge">0/0</span>
+      <span id="status-msg">กด START เพื่อเริ่ม หรือ STEP เพื่อเดินทีละขั้น</span>
+    </div>
+
+    <!-- Canvas วาด bar chart -->
+    <div id="canvas-wrap">
+      <canvas id="chart" height="260"></canvas>
+      <div class="legend">
+        <span><i class="dot" style="background:#555"></i> ปกติ</span>
+        <span><i class="dot" style="background:#aaa"></i> กำลังเปรียบเทียบ</span>
+        <span><i class="dot" style="background:#222"></i> min / pivot / ตัวแทรก</span>
+        <span><i class="dot" style="background:#111;outline:2px solid #111"></i> เรียงแล้ว</span>
+      </div>
+    </div>
+
+    <!-- Step History -->
+    <div class="history-panel">
+      <h2>STEP HISTORY <span id="hist-count">0 steps</span></h2>
+      <div id="hist-body"></div>
+    </div>
+
+
+
+  </div>
+</div>
+
+<script>
+//  DATA: รายชื่อ algorithm ที่รองรับ
+const ALGOS = [
+  'Selection Sort',
+  'Insertion Sort',
+  'Bubble Sort',
+  'Shell Sort',
+  'Merge Sort',
+  'Quick Sort'
+];
+
+//  STATE: ตัวแปรสถานะหลักของโปรแกรม
+let currentAlgo = 0;       // index ของ algorithm ที่เลือก
+let steps = [];            // array ของ step ทั้งหมด (เตรียมไว้ก่อน)
+let stepIndex = 0;         // step ปัจจุบันที่แสดงอยู่
+let autoTimer = null;      // timer สำหรับ auto-play
+let paused = false;        // สถานะ pause
+
+//  BUILD SIDEBAR: สร้างปุ่ม algorithm
+function buildSidebar() {
+  const list = document.getElementById('algo-list');
+  list.innerHTML = '';
+  ALGOS.forEach((name, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'algo-btn' + (i === currentAlgo ? ' active' : '');
+    btn.textContent = `${i + 1}  ${name}`;
+    btn.onclick = () => {
+      currentAlgo = i;
+      buildSidebar();
+      resetAll();
+    };
+    list.appendChild(btn);
+  });
+}
+
+//  INPUT HELPERS
+
+
+// อ่าน array จาก input field
+function getInputArray() {
+  return document.getElementById('arr-input').value
+    .split(',')
+    .map(s => parseInt(s.trim()))
+    .filter(n => !isNaN(n));
+}
+
+// ดึงค่า speed fix ที่ 700ms
+function getSpeed() {
+  return 700;
+}
+
+// สุ่ม array ใหม่ขนาด 8 ตัว
+function randomArray() {
+  const arr = Array.from({length: 8}, () => Math.floor(Math.random() * 12) + 1);
+  document.getElementById('arr-input').value = arr.join(',');
+  resetAll();
+}
+
+// ============================================================
+//  STEP GENERATORS
+//  แต่ละ algorithm จะคืน array ของ "step" เพื่อให้ visualizer
+//  แสดงทีละ step ได้ โดยไม่ต้องรัน algorithm ซ้ำ
+//
+//  โครงสร้างของ step:
+//  { arr: [...],        // สถานะ array ณ step นั้น
+//    compare: [i, j],   // indices ที่กำลังเปรียบเทียบ (optional)
+//    sorted: [i,...],   // indices ที่เรียงแล้ว
+//    highlight: [i],    // indices พิเศษ (min, pivot, ตัวแทรก)
+//    msg: "..." }       // คำอธิบาย step นี้
+// ============================================================
+
+// ---- Selection Sort ----
+// แนวคิด: หาค่าต่ำสุดในส่วนที่ยังไม่เรียง แล้ว swap มาไว้หน้า
+function genSelectionSort(arr) {
+  const steps = [];
+  const a = [...arr];
+  const sortedSet = new Set();
+
+  // บันทึก step เริ่มต้น
+  steps.push({ arr: [...a], sorted: [], compare: [], highlight: [], msg: 'Initial array' });
+
+  for (let i = 0; i < a.length - 1; i++) {
+    let minIdx = i;
+    // สแกนหาค่าต่ำสุดจาก i+1 ถึงท้าย
+    for (let j = i + 1; j < a.length; j++) {
+      steps.push({
+        arr: [...a],
+        sorted: [...sortedSet],
+        compare: [j, minIdx],
+        highlight: [minIdx],
+        msg: `Finding minimum: comparing ${a[j]} with current min ${a[minIdx]}`
+      });
+      if (a[j] < a[minIdx]) {
+        minIdx = j;
+      }
+    }
+    // swap ค่าต่ำสุดมาไว้ที่ตำแหน่ง i
+    if (minIdx !== i) {
+      [a[i], a[minIdx]] = [a[minIdx], a[i]];
+      steps.push({
+        arr: [...a],
+        sorted: [...sortedSet],
+        compare: [i, minIdx],
+        highlight: [i],
+        msg: `Swap: placed ${a[i]} at position ${i}`
+      });
+    }
+    sortedSet.add(i);
+    steps.push({
+      arr: [...a],
+      sorted: [...sortedSet],
+      compare: [],
+      highlight: [i],
+      msg: `Position ${i} is now sorted with value ${a[i]}`
+    });
+  }
+  sortedSet.add(a.length - 1);
+  steps.push({ arr: [...a], sorted: [...sortedSet], compare: [], highlight: [], msg: 'Array sorted!' });
+  return steps;
+}
+
+// ---- Insertion Sort ----
+// แนวคิด: หยิบแต่ละตัวมาแทรกในตำแหน่งที่ถูกต้องทางซ้าย
+function genInsertionSort(arr) {
+  const steps = [];
+  const a = [...arr];
+  steps.push({ arr: [...a], sorted: [0], compare: [], highlight: [], msg: 'Initial array' });
+
+  for (let i = 1; i < a.length; i++) {
+    const key = a[i];
+    let j = i - 1;
+    steps.push({
+      arr: [...a], sorted: Array.from({length: i}, (_, k) => k),
+      compare: [], highlight: [i],
+      msg: `Inserting key = ${key}`
+    });
+    // เลื่อนตัวที่มากกว่า key ไปทางขวา
+    while (j >= 0 && a[j] > key) {
+      steps.push({
+        arr: [...a], sorted: Array.from({length: i}, (_, k) => k),
+        compare: [j, j + 1], highlight: [i],
+        msg: `${a[j]} > ${key}, shift ${a[j]} right`
+      });
+      a[j + 1] = a[j];
+      j--;
+    }
+    a[j + 1] = key;
+    steps.push({
+      arr: [...a], sorted: Array.from({length: i + 1}, (_, k) => k),
+      compare: [], highlight: [j + 1],
+      msg: `Placed ${key} at index ${j + 1}`
+    });
+  }
+  steps.push({ arr: [...a], sorted: [...Array(a.length).keys()], compare: [], highlight: [], msg: 'Array sorted!' });
+  return steps;
+}
+
+// ---- Bubble Sort ----
+// แนวคิด: เปรียบเทียบคู่ติดกัน ถ้าผิดลำดับก็ swap จนครบทุกรอบ
+function genBubbleSort(arr) {
+  const steps = [];
+  const a = [...arr];
+  const sortedSet = new Set();
+  steps.push({ arr: [...a], sorted: [], compare: [], highlight: [], msg: 'Initial array' });
+
+  for (let i = 0; i < a.length - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < a.length - 1 - i; j++) {
+      steps.push({
+        arr: [...a], sorted: [...sortedSet],
+        compare: [j, j + 1], highlight: [],
+        msg: `Compare ${a[j]} and ${a[j+1]}`
+      });
+      if (a[j] > a[j + 1]) {
+        [a[j], a[j + 1]] = [a[j + 1], a[j]];
+        swapped = true;
+        steps.push({
+          arr: [...a], sorted: [...sortedSet],
+          compare: [j, j + 1], highlight: [j + 1],
+          msg: `Swap: ${a[j+1]} > ${a[j]}, moved ${a[j]} right`
+        });
+      }
+    }
+    sortedSet.add(a.length - 1 - i);
+    if (!swapped) break; // optimization: หยุดถ้าไม่มี swap แล้ว
+  }
+  for (let k = 0; k < a.length; k++) sortedSet.add(k);
+  steps.push({ arr: [...a], sorted: [...sortedSet], compare: [], highlight: [], msg: 'Array sorted!' });
+  return steps;
+}
+
+// ---- Shell Sort ----
+// แนวคิด: Insertion Sort แต่ใช้ gap ลดลงเรื่อยๆ (เริ่มจาก n/2)
+function genShellSort(arr) {
+  const steps = [];
+  const a = [...arr];
+  steps.push({ arr: [...a], sorted: [], compare: [], highlight: [], msg: 'Initial array' });
+
+  let gap = Math.floor(a.length / 2);
+  while (gap > 0) {
+    steps.push({ arr: [...a], sorted: [], compare: [], highlight: [], msg: `Gap = ${gap}` });
+    for (let i = gap; i < a.length; i++) {
+      const temp = a[i];
+      let j = i;
+      while (j >= gap && a[j - gap] > temp) {
+        steps.push({
+          arr: [...a], sorted: [], compare: [j - gap, j], highlight: [i],
+          msg: `Gap ${gap}: ${a[j-gap]} > ${temp}, shift right`
+        });
+        a[j] = a[j - gap];
+        j -= gap;
+      }
+      a[j] = temp;
+      steps.push({
+        arr: [...a], sorted: [], compare: [], highlight: [j],
+        msg: `Gap ${gap}: placed ${temp} at index ${j}`
+      });
+    }
+    gap = Math.floor(gap / 2);
+  }
+  steps.push({ arr: [...a], sorted: [...Array(a.length).keys()], compare: [], highlight: [], msg: 'Array sorted!' });
+  return steps;
+}
+
+// ---- Merge Sort ----
+// แนวคิด: แบ่งครึ่ง เรียงแต่ละครึ่ง แล้ว merge รวมกัน (Divide & Conquer)
+function genMergeSort(arr) {
+  const steps = [];
+  const a = [...arr];
+  steps.push({ arr: [...a], sorted: [], compare: [], highlight: [], msg: 'Initial array' });
+
+  // Recursive merge sort บันทึก step ลงใน steps array
+  function mergeSort(arr, l, r) {
+    if (l >= r) return;
+    const mid = Math.floor((l + r) / 2);
+    steps.push({
+      arr: [...a], sorted: [], compare: [], highlight: [l, mid, r],
+      msg: `Divide: [${l}..${mid}] and [${mid+1}..${r}]`
+    });
+    mergeSort(arr, l, mid);
+    mergeSort(arr, mid + 1, r);
+    merge(arr, l, mid, r);
+  }
+
+  // Merge สอง sub-array เข้าด้วยกัน
+  function merge(arr, l, mid, r) {
+    const left = arr.slice(l, mid + 1);
+    const right = arr.slice(mid + 1, r + 1);
+    let i = 0, j = 0, k = l;
+    while (i < left.length && j < right.length) {
+      steps.push({
+        arr: [...a], sorted: [], compare: [l + i, mid + 1 + j], highlight: [k],
+        msg: `Merge: compare ${left[i]} vs ${right[j]}`
+      });
+      if (left[i] <= right[j]) {
+        arr[k] = left[i++];
+      } else {
+        arr[k] = right[j++];
+      }
+      a[k] = arr[k];
+      k++;
+    }
+    while (i < left.length) { arr[k] = left[i++]; a[k] = arr[k]; k++; }
+    while (j < right.length) { arr[k] = right[j++]; a[k] = arr[k]; k++; }
+    steps.push({
+      arr: [...a], sorted: [], compare: [], highlight: Array.from({length: r-l+1}, (_, x) => l+x),
+      msg: `Merged segment [${l}..${r}]`
+    });
+  }
+
+  mergeSort(a, 0, a.length - 1);
+  steps.push({ arr: [...a], sorted: [...Array(a.length).keys()], compare: [], highlight: [], msg: 'Array sorted!' });
+  return steps;
+}
+
+// ---- Quick Sort ----
+// แนวคิด: เลือก pivot แบ่ง array ออกเป็น < pivot และ > pivot แล้ว recursive
+function genQuickSort(arr) {
+  const steps = [];
+  const a = [...arr];
+  steps.push({ arr: [...a], sorted: [], compare: [], highlight: [], msg: 'Initial array' });
+
+  const sortedSet = new Set();
+
+  function quickSort(arr, lo, hi) {
+    if (lo >= hi) {
+      if (lo === hi) sortedSet.add(lo);
+      return;
+    }
+    const p = partition(arr, lo, hi);
+    sortedSet.add(p);
+    steps.push({
+      arr: [...a], sorted: [...sortedSet], compare: [], highlight: [p],
+      msg: `Pivot ${a[p]} is now at correct position ${p}`
+    });
+    quickSort(arr, lo, p - 1);
+    quickSort(arr, p + 1, hi);
+  }
+
+  // Lomuto partition scheme
+  function partition(arr, lo, hi) {
+    const pivot = arr[hi];
+    steps.push({
+      arr: [...a], sorted: [...sortedSet], compare: [], highlight: [hi],
+      msg: `Pivot = ${pivot} at index ${hi}`
+    });
+    let i = lo - 1;
+    for (let j = lo; j < hi; j++) {
+      steps.push({
+        arr: [...a], sorted: [...sortedSet], compare: [j, hi], highlight: [hi],
+        msg: `Compare ${arr[j]} with pivot ${pivot}`
+      });
+      if (arr[j] <= pivot) {
+        i++;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        a[i] = arr[i]; a[j] = arr[j];
+        if (i !== j) {
+          steps.push({
+            arr: [...a], sorted: [...sortedSet], compare: [i, j], highlight: [hi],
+            msg: `Swap ${arr[i]} and ${arr[j]}`
+          });
+        }
+      }
+    }
+    [arr[i + 1], arr[hi]] = [arr[hi], arr[i + 1]];
+    a[i + 1] = arr[i + 1]; a[hi] = arr[hi];
+    return i + 1;
+  }
+
+  quickSort(a, 0, a.length - 1);
+  for (let k = 0; k < a.length; k++) sortedSet.add(k);
+  steps.push({ arr: [...a], sorted: [...sortedSet], compare: [], highlight: [], msg: 'Array sorted!' });
+  return steps;
+}
+
+// ============================================================
+//  MAP: เชื่อม algorithm index กับ generator function
+// ============================================================
+const GENERATORS = [
+  genSelectionSort,
+  genInsertionSort,
+  genBubbleSort,
+  genShellSort,
+  genMergeSort,
+  genQuickSort,
+];
+
+// ============================================================
+//  DRAWING: วาด bar chart บน Canvas
+// ============================================================
+function drawStep(step) {
+  const canvas = document.getElementById('chart');
+  const wrap = document.getElementById('canvas-wrap');
+  canvas.width = wrap.clientWidth - 20; // ปรับขนาดตาม container
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const arr = step.arr;
+  const n = arr.length;
+  const maxVal = Math.max(...arr);
+
+  const padL = 20, padR = 20, padTop = 30, padBottom = 30;
+  const chartW = W - padL - padR;
+  const chartH = H - padTop - padBottom;
+  const barW = chartW / n * 0.7;
+  const gap = chartW / n;
+
+  const compareSet = new Set(step.compare || []);
+  const sortedSet = new Set(step.sorted || []);
+  const highlightSet = new Set(step.highlight || []);
+
+  for (let i = 0; i < n; i++) {
+    const x = padL + gap * i + (gap - barW) / 2;
+    const barH = (arr[i] / maxVal) * chartH;
+    const y = padTop + chartH - barH;
+
+    // กำหนดสีของแต่ละ bar ตามสถานะ
+    let color;
+    if (sortedSet.has(i)) {
+      color = getComputedStyle(document.documentElement).getPropertyValue('--bar-sorted').trim();
+    } else if (highlightSet.has(i)) {
+      color = getComputedStyle(document.documentElement).getPropertyValue('--bar-min').trim();
+    } else if (compareSet.has(i)) {
+      color = getComputedStyle(document.documentElement).getPropertyValue('--bar-compare').trim();
+    } else {
+      color = getComputedStyle(document.documentElement).getPropertyValue('--bar-default').trim();
+    }
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barW, barH);
+
+    // แสดงตัวเลขบนบาร์
+    ctx.fillStyle = sortedSet.has(i) ? '#fff' : '#111';
+    ctx.font = `bold ${Math.min(14, barW * 0.6)}px Courier New`;
+    ctx.textAlign = 'center';
+    ctx.fillText(arr[i], x + barW / 2, y - 5);
+
+    // แสดง index ล่าง
+    ctx.fillStyle = '#999';
+    ctx.font = '11px Courier New';
+    ctx.fillText(i, x + barW / 2, H - 5);
+  }
+}
+
+
+//  UPDATE UI: อัปเดต badge, message, history (mini boxes)
+// ============================================================
+function updateUI(step, idx) {
+  // อัปเดต step badge
+  document.getElementById('step-badge').textContent = `${idx}/${steps.length - 1}`;
+  // อัปเดต message
+  document.getElementById('status-msg').textContent = step.msg;
+
+  // วาด chart
+  drawStep(step);
+
+  // อัปเดต history count
+  const body = document.getElementById('hist-body');
+  document.getElementById('hist-count').textContent = `${idx} steps`;
+
+  // สร้างชุด index ที่ active และ sorted สำหรับ highlight mini boxes
+  const activeSet = new Set([...(step.compare || []), ...(step.highlight || [])]);
+  const sortedSet = new Set(step.sorted || []);
+
+  // สร้างแถวใหม่ใน history
+  const row = document.createElement('div');
+  row.className = 'hist-row latest';
+
+  // คอลัมน์ 1: เลข step
+  const idxSpan = document.createElement('span');
+  idxSpan.className = 'idx';
+  idxSpan.textContent = `#${idx}`;
+
+  // คอลัมน์ 2: mini boxes แสดง array snapshot
+  const boxes = document.createElement('div');
+  boxes.className = 'hist-boxes';
+  step.arr.forEach((val, i) => {
+    const box = document.createElement('div');
+    box.className = 'hbox';
+    // กำหนด class ตามสถานะของตำแหน่งนั้น
+    if (activeSet.has(i))      box.classList.add('active');
+    else if (sortedSet.has(i)) box.classList.add('sorted-box');
+    box.textContent = val;
+    boxes.appendChild(box);
+  });
+
+  // คอลัมน์ 3: message
+  const msg = document.createElement('div');
+  msg.className = 'hist-msg';
+  msg.textContent = step.msg;
+
+  row.appendChild(idxSpan);
+  row.appendChild(boxes);
+  row.appendChild(msg);
+
+  // ลบ class latest จากแถวก่อนหน้า
+  body.querySelectorAll('.hist-row').forEach(r => r.classList.remove('latest'));
+  body.appendChild(row);
+
+  // scroll ไปแถวล่าสุด
+  body.scrollTop = body.scrollHeight;
+}
+
+// ============================================================
+//  CONTROL FUNCTIONS
+// ============================================================
+
+// Reset ทุกอย่างกลับไปเริ่มต้น
+function resetAll() {
+  clearInterval(autoTimer);
+  autoTimer = null;
+  paused = false;
+
+  const arr = getInputArray();
+  if (arr.length === 0) return;
+
+  // Generate steps ตาม algorithm ที่เลือก
+  steps = GENERATORS[currentAlgo](arr);
+  stepIndex = 0;
+
+  // reset history
+  document.getElementById('hist-body').innerHTML = '';
+  updateUI(steps[0], 0);
+}
+
+// เดินหน้า 1 step
+function stepOnce() {
+  if (stepIndex >= steps.length - 1) return;
+  stepIndex++;
+  updateUI(steps[stepIndex], stepIndex);
+}
+
+// Auto-play: เดิน step อัตโนมัติตาม speed
+function startAuto() {
+  if (autoTimer) return; // ป้องกัน double-start
+  paused = false;
+
+  // ถ้าเพิ่ง reset หรือยังไม่มี steps ให้ generate ใหม่
+  if (steps.length === 0) resetAll();
+
+  autoTimer = setInterval(() => {
+    if (!paused) {
+      if (stepIndex >= steps.length - 1) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        return;
+      }
+      stepOnce();
+    }
+  }, getSpeed());
+}
+
+// Toggle pause/resume
+function togglePause() {
+  paused = !paused;
+  document.querySelector('.btn-pause').textContent = paused ? '▶ RESUME' : '⏸ PAUSE';
+}
+
+// ============================================================
+//  INIT: เรียกเมื่อโหลดหน้า
+// ============================================================
+buildSidebar();
+resetAll();
+
+// วาดใหม่เมื่อ resize หน้าต่าง
+window.addEventListener('resize', () => {
+  if (steps.length > 0) drawStep(steps[stepIndex]);
+});
+</script>
+</body>
+</html>

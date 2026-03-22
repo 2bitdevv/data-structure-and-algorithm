@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Visualization · Step by Step</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            color: #1e1e1e;
+            line-height: 1.6;
+            padding: 32px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            margin-bottom: 32px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            color: #444;
+        }
+
+        .header .subtitle {
+            color: #555;
+            font-size: 1rem;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .header .subtitle span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* MAIN CONTENT */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: #fff;
+            border: 1.5px solid #000;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .sidebar-header {
+            border-bottom: 1.5px solid #000;
+            padding: 16px;
+            background: #f0f0f0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .algorithm-list {
+            padding: 12px;
+        }
+
+        .algorithm-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .algorithm-item:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+
+        .algorithm-item.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+        .algorithm-item.active i {
+            color: #fff;
+        }
+
+        .algorithm-item i {
+            width: 20px;
+            color: #444;
+        }
+
+        /* CONTROL PANEL */
+        .control-panel {
+            background: #fff;
+            border: 1.5px solid #000;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            padding: 20px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #000;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            background: #fafafa;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: 1.5px solid #000;
+            background: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .btn.primary {
+            background: #000;
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: #333;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ARRAY VISUALIZATION */
+        .array-container {
+            background: #fff;
+            border: 1.5px solid #000;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .array-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            min-height: 200px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .bar {
+            flex: 1;
+            min-width: 40px;
+            background: #3498db;
+            border: 1.5px solid #000;
+            position: relative;
+            transition: height 0.3s ease, background 0.3s ease;
+        }
+
+        .bar.comparing {
+            background: #f39c12;
+        }
+
+        .bar.swapping {
+            background: #e74c3c;
+        }
+
+        .bar.sorted {
+            background: #2ecc71;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .array-indices {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .index {
+            flex: 1;
+            min-width: 40px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        /* STEP DISPLAY */
+        .step-display {
+            background: #fafafa;
+            border: 1.5px solid #000;
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .current-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .step-number {
+            background: #000;
+            color: #fff;
+            padding: 4px 12px;
+            font-weight: 600;
+        }
+
+        .step-description {
+            color: #333;
+        }
+
+        /* ARRAY STATES */
+        .states-container {
+            background: #fff;
+            border: 1.5px solid #000;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .states-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .states-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .states-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .state-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 6px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .state-step {
+            min-width: 50px;
+            color: #666;
+        }
+
+        .state-array {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .state-item {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+        }
+
+        .state-item.current {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+        .state-desc {
+            color: #555;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+
+        /* COMPLEXITY INFO */
+        .complexity-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .complexity-item {
+            text-align: center;
+        }
+
+        .complexity-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .complexity-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 968px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .algorithm-list {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            
+            .algorithm-item {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>
+                <i class="fa-solid fa-chart-simple"></i>
+                SORTING ALGORITHM VISUALIZER
+            </h1>
+            <div class="subtitle">
+                <span><i class="fa-regular fa-arrow-right"></i> 6 Algorithms</span>
+                <span><i class="fa-regular fa-arrow-right"></i> Step by Step</span>
+                <span><i class="fa-regular fa-arrow-right"></i> Compare & Learn</span>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="content-wrapper">
+            <!-- SIDEBAR: ALGORITHMS -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    <span>ALGORITHMS</span>
+                </div>
+                <div class="algorithm-list" id="algorithmList">
+                    <div class="algorithm-item active" data-algo="selection">
+                        <i class="fa-regular fa-1"></i>
+                        Selection Sort
+                    </div>
+                    <div class="algorithm-item" data-algo="insertion">
+                        <i class="fa-regular fa-2"></i>
+                        Insertion Sort
+                    </div>
+                    <div class="algorithm-item" data-algo="bubble">
+                        <i class="fa-regular fa-3"></i>
+                        Bubble Sort
+                    </div>
+                    <div class="algorithm-item" data-algo="shell">
+                        <i class="fa-regular fa-4"></i>
+                        Shell Sort
+                    </div>
+                    <div class="algorithm-item" data-algo="merge">
+                        <i class="fa-regular fa-5"></i>
+                        Merge Sort
+                    </div>
+                    <div class="algorithm-item" data-algo="quick">
+                        <i class="fa-regular fa-6"></i>
+                        Quick Sort
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN PANEL -->
+            <div class="main-panel">
+                <!-- CONTROL PANEL -->
+                <div class="control-panel">
+                    <div class="input-section">
+                        <div class="input-group">
+                            <label><i class="fa-regular fa-keyboard"></i> INPUT ARRAY</label>
+                            <input type="text" id="arrayInput" placeholder="e.g., 5,3,8,1,2,7,4,6" value="5,3,8,1,2,7,4,6">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fa-regular fa-gauge-high"></i> SPEED (MS)</label>
+                            <input type="number" id="speedInput" min="100" max="2000" step="100" value="500">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn primary" id="startBtn">
+                                <i class="fa-regular fa-play"></i> START
+                            </button>
+                            <button class="btn" id="stepBtn">
+                                <i class="fa-regular fa-forward"></i> STEP
+                            </button>
+                            <button class="btn" id="resetBtn">
+                                <i class="fa-regular fa-rotate-right"></i> RESET
+                            </button>
+                            <button class="btn" id="randomBtn">
+                                <i class="fa-regular fa-shuffle"></i> RANDOM
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CURRENT STEP -->
+                    <div class="step-display" id="stepDisplay">
+                        <div class="current-step">
+                            <span class="step-number" id="stepCounter">0/0</span>
+                            <span class="step-description" id="stepDescription">Ready to start sorting</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ARRAY VISUALIZATION -->
+                <div class="array-container">
+                    <div class="array-bars" id="arrayBars"></div>
+                    <div class="array-indices" id="arrayIndices"></div>
+                </div>
+
+                <!-- STATES HISTORY -->
+                <div class="states-container">
+                    <div class="states-header">
+                        <h3><i class="fa-regular fa-clock-rotate-left"></i> STEP HISTORY</h3>
+                        <span class="badge" id="stepCount">0 steps</span>
+                    </div>
+                    <div class="states-grid" id="statesGrid">
+                        <div class="state-row">
+                            <span class="state-step">#0</span>
+                            <span class="state-array">Initial array</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMPLEXITY INFO -->
+                <div class="complexity-info" id="complexityInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== SORTING ALGORITHMS ====================
+        const algorithms = {
+            selection: {
+                name: 'Selection Sort',
+                complexity: {
+                    best: 'O(n²)',
+                    average: 'O(n²)',
+                    worst: 'O(n²)',
+                    space: 'O(1)'
+                },
+                description: 'Find minimum element and swap with first position',
+                generator: function* (arr) {
+                    const n = arr.length;
+                    const steps = [];
+                    
+                    for (let i = 0; i < n - 1; i++) {
+                        let minIdx = i;
+                        
+                        // Find minimum
+                        for (let j = i + 1; j < n; j++) {
+                            yield {
+                                array: [...arr],
+                                comparing: [j, minIdx],
+                                description: `Finding minimum: comparing ${arr[j]} with current min ${arr[minIdx]}`
+                            };
+                            
+                            if (arr[j] < arr[minIdx]) {
+                                minIdx = j;
+                            }
+                        }
+                        
+                        // Swap if needed
+                        if (minIdx !== i) {
+                            yield {
+                                array: [...arr],
+                                swapping: [i, minIdx],
+                                description: `Swapping ${arr[i]} with minimum ${arr[minIdx]}`
+                            };
+                            
+                            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+                        }
+                        
+                        yield {
+                            array: [...arr],
+                            sorted: [...Array(i + 1).keys()],
+                            description: `Position ${i} is now sorted with value ${arr[i]}`
+                        };
+                    }
+                    
+                    yield {
+                        array: [...arr],
+                        sorted: [...Array(n).keys()],
+                        description: 'Array is fully sorted!'
+                    };
+                }
+            },
+
+            insertion: {
+                name: 'Insertion Sort',
+                complexity: {
+                    best: 'O(n)',
+                    average: 'O(n²)',
+                    worst: 'O(n²)',
+                    space: 'O(1)'
+                },
+                description: 'Build sorted array by inserting elements in correct position',
+                generator: function* (arr) {
+                    const n = arr.length;
+                    
+                    for (let i = 1; i < n; i++) {
+                        let key = arr[i];
+                        let j = i - 1;
+                        
+                        yield {
+                            array: [...arr],
+                            comparing: [i],
+                            description: `Taking element ${key} at position ${i}`
+                        };
+                        
+                        while (j >= 0 && arr[j] > key) {
+                            yield {
+                                array: [...arr],
+                                comparing: [j, j + 1],
+                                description: `${arr[j]} > ${key}, shifting ${arr[j]} to right`
+                            };
+                            
+                            arr[j + 1] = arr[j];
+                            j--;
+                        }
+                        
+                        arr[j + 1] = key;
+                        
+                        yield {
+                            array: [...arr],
+                            sorted: [...Array(i + 1).keys()],
+                            description: `Inserted ${key} at position ${j + 1}`
+                        };
+                    }
+                    
+                    yield {
+                        array: [...arr],
+                        sorted: [...Array(n).keys()],
+                        description: 'Array is fully sorted!'
+                    };
+                }
+            },
+
+            bubble: {
+                name: 'Bubble Sort',
+                complexity: {
+                    best: 'O(n)',
+                    average: 'O(n²)',
+                    worst: 'O(n²)',
+                    space: 'O(1)'
+                },
+                description: 'Repeatedly swap adjacent elements if they are in wrong order',
+                generator: function* (arr) {
+                    const n = arr.length;
+                    
+                    for (let i = 0; i < n - 1; i++) {
+                        let swapped = false;
+                        
+                        for (let j = 0; j < n - i - 1; j++) {
+                            yield {
+                                array: [...arr],
+                                comparing: [j, j + 1],
+                                description: `Comparing ${arr[j]} and ${arr[j + 1]}`
+                            };
+                            
+                            if (arr[j] > arr[j + 1]) {
+                                yield {
+                                    array: [...arr],
+                                    swapping: [j, j + 1],
+                                    description: `${arr[j]} > ${arr[j + 1]}, swapping`
+                                };
+                                
+                                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                                swapped = true;
+                            }
+                        }
+                        
+                        yield {
+                            array: [...arr],
+                            sorted: [...Array(n - i).keys()].map(k => n - 1 - k),
+                            description: `Largest element ${arr[n - 1 - i]} bubbled to position ${n - 1 - i}`
+                        };
+                        
+                        if (!swapped) break;
+                    }
+                    
+                    yield {
+                        array: [...arr],
+                        sorted: [...Array(n).keys()],
+                        description: 'Array is fully sorted!'
+                    };
+                }
+            },
+
+            shell: {
+                name: 'Shell Sort',
+                complexity: {
+                    best: 'O(n log n)',
+                    average: 'O(n log² n)',
+                    worst: 'O(n²)',
+                    space: 'O(1)'
+                },
+                description: 'Compare elements far apart, then reduce gap',
+                generator: function* (arr) {
+                    const n = arr.length;
+                    
+                    for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+                        yield {
+                            array: [...arr],
+                            description: `Starting with gap = ${gap}`
+                        };
+                        
+                        for (let i = gap; i < n; i++) {
+                            let temp = arr[i];
+                            let j;
+                            
+                            for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
+                                yield {
+                                    array: [...arr],
+                                    comparing: [j, j - gap],
+                                    description: `Comparing elements at distance ${gap}: ${arr[j - gap]} > ${temp}`
+                                };
+                                
+                                arr[j] = arr[j - gap];
+                            }
+                            
+                            arr[j] = temp;
+                            
+                            if (j !== i) {
+                                yield {
+                                    array: [...arr],
+                                    description: `Inserted ${temp} at position ${j} (gap = ${gap})`
+                                };
+                            }
+                        }
+                    }
+                    
+                    yield {
+                        array: [...arr],
+                        sorted: [...Array(n).keys()],
+                        description: 'Array is fully sorted!'
+                    };
+                }
+            },
+
+            merge: {
+                name: 'Merge Sort',
+                complexity: {
+                    best: 'O(n log n)',
+                    average: 'O(n log n)',
+                    worst: 'O(n log n)',
+                    space: 'O(n)'
+                },
+                description: 'Divide array into halves, sort recursively, then merge',
+                generator: function* (arr) {
+                    const n = arr.length;
+                    
+                    function* mergeSortHelper(l, r, depth = 0) {
+                        if (l >= r) return;
+                        
+                        const mid = Math.floor((l + r) / 2);
+                        
+                        yield {
+                            array: [...arr],
+                            description: `Dividing [${l}..${r}] at middle ${mid}`
+                        };
+                        
+                        yield* mergeSortHelper(l, mid, depth + 1);
+                        yield* mergeSortHelper(mid + 1, r, depth + 1);
+                        
+                        // Merge
+                        const left = arr.slice(l, mid + 1);
+                        const right = arr.slice(mid + 1, r + 1);
+                        let i = 0, j = 0, k = l;
+                        
+                        yield {
+                            array: [...arr],
+                            description: `Merging [${l}..${mid}] and [${mid + 1}..${r}]`
+                        };
+                        
+                        while (i < left.length && j < right.length) {
+                            yield {
+                                array: [...arr],
+                                comparing: [l + i, mid + 1 + j],
+                                description: `Comparing ${left[i]} and ${right[j]}`
+                            };
+                            
+                            if (left[i] <= right[j]) {
+                                arr[k] = left[i];
+                                i++;
+                            } else {
+                                arr[k] = right[j];
+                                j++;
+                            }
+                            k++;
+                            
+                            yield {
+                                array: [...arr],
+                                description: `Placed element at position ${k - 1}`
+                            };
+                        }
+                        
+                        while (i < left.length) {
+                            arr[k] = left[i];
+                            i++;
+                            k++;
+                        }
+                        
+                        while (j < right.length) {
+                            arr[k] = right[j];
+                            j++;
+                            k++;
+                        }
+                        
+                        yield {
+                            array: [...arr],
+                            description: `Merged section [${l}..${r}]`
+                        };
+                    }
+                    
+                    yield* mergeSortHelper(0, n - 1);
+                    
+                    yield {
+                        array: [...arr],
+                        sorted: [...Array(n).keys()],
+                        description: 'Array is fully sorted!'
+                    };
+                }
+            },
+
+            quick: {
+                name: 'Quick Sort',
+                complexity: {
+                    best: 'O(n log n)',
+                    average: 'O(n log n)',
+                    worst: 'O(n²)',
+                    space: 'O(log n)'
+                },
+                description: 'Pick pivot, partition, then recursively sort partitions',
+                generator: function* (arr) {
+                    const n = arr.length;
+                    
+                    function* quickSortHelper(l, r) {
+                        if (l >= r) return;
+                        
+                        // Choose pivot (middle element)
+                        const pivotIdx = Math.floor((l + r) / 2);
+                        const pivot = arr[pivotIdx];
+                        
+                        yield {
+                            array: [...arr],
+                            pivot: pivotIdx,
+                            description: `Choosing pivot = ${pivot} at position ${pivotIdx}`
+                        };
+                        
+                        // Partition
+                        let i = l, j = r;
+                        
+                        while (i <= j) {
+                            while (arr[i] < pivot) {
+                                yield {
+                                    array: [...arr],
+                                    comparing: [i],
+                                    description: `${arr[i]} < pivot, moving right`
+                                };
+                                i++;
+                            }
+                            
+                            while (arr[j] > pivot) {
+                                yield {
+                                    array: [...arr],
+                                    comparing: [j],
+                                    description: `${arr[j]} > pivot, moving left`
+                                };
+                                j--;
+                            }
+                            
+                            if (i <= j) {
+                                yield {
+                                    array: [...arr],
+                                    swapping: [i, j],
+                                    description: `Swapping ${arr[i]} and ${arr[j]}`
+                                };
+                                
+                                [arr[i], arr[j]] = [arr[j], arr[i]];
+                                i++;
+                                j--;
+                            }
+                        }
+                        
+                        yield {
+                            array: [...arr],
+                            description: `Partition complete, pivot ${pivot} in correct position`
+                        };
+                        
+                        // Recursively sort
+                        if (l < j) yield* quickSortHelper(l, j);
+                        if (i < r) yield* quickSortHelper(i, r);
+                    }
+                    
+                    yield* quickSortHelper(0, n - 1);
+                    
+                    yield {
+                        array: [...arr],
+                        sorted: [...Array(n).keys()],
+                        description: 'Array is fully sorted!'
+                    };
+                }
+            }
+        };
+
+        // ==================== STATE MANAGEMENT ====================
+        let currentAlgo = 'selection';
+        let originalArray = [];
+        let currentArray = [];
+        let steps = [];
+        let currentStep = 0;
+        let isPlaying = false;
+        let timer = null;
+        let speed = 500;
+
+        // DOM Elements
+        const algorithmItems = document.querySelectorAll('.algorithm-item');
+        const arrayInput = document.getElementById('arrayInput');
+        const speedInput = document.getElementById('speedInput');
+        const startBtn = document.getElementById('startBtn');
+        const stepBtn = document.getElementById('stepBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const arrayBars = document.getElementById('arrayBars');
+        const arrayIndices = document.getElementById('arrayIndices');
+        const stepCounter = document.getElementById('stepCounter');
+        const stepDescription = document.getElementById('stepDescription');
+        const statesGrid = document.getElementById('statesGrid');
+        const complexityInfo = document.getElementById('complexityInfo');
+        const stepCount = document.getElementById('stepCount');
+
+        // Initialize
+        function init() {
+            parseInput();
+            renderBars();
+            updateComplexityInfo();
+            
+            // Event Listeners
+            algorithmItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    algorithmItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentAlgo = item.dataset.algo;
+                    reset();
+                    updateComplexityInfo();
+                });
+            });
+
+            startBtn.addEventListener('click', togglePlay);
+            stepBtn.addEventListener('click', nextStep);
+            resetBtn.addEventListener('click', reset);
+            randomBtn.addEventListener('click', generateRandom);
+            arrayInput.addEventListener('change', parseInput);
+            speedInput.addEventListener('change', () => {
+                speed = parseInt(speedInput.value);
+            });
+        }
+
+        // Parse input array
+        function parseInput() {
+            try {
+                const input = arrayInput.value;
+                originalArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                if (originalArray.length === 0) originalArray = [5, 3, 8, 1, 2, 7, 4, 6];
+                currentArray = [...originalArray];
+                arrayInput.value = originalArray.join(',');
+            } catch (e) {
+                originalArray = [5, 3, 8, 1, 2, 7, 4, 6];
+                currentArray = [...originalArray];
+            }
+        }
+
+        // Generate random array
+        function generateRandom() {
+            const length = Math.floor(Math.random() * 8) + 5; // 5-12 elements
+            const arr = [];
+            for (let i = 0; i < length; i++) {
+                arr.push(Math.floor(Math.random() * 20) + 1);
+            }
+            arrayInput.value = arr.join(',');
+            parseInput();
+            reset();
+        }
+
+        // Generate steps
+        function generateSteps() {
+            const algo = algorithms[currentAlgo];
+            const arr = [...originalArray];
+            const generator = algo.generator(arr);
+            steps = [];
+            
+            let stepCount = 0;
+            for (const step of generator) {
+                steps.push({
+                    ...step,
+                    stepNumber: stepCount++
+                });
+            }
+        }
+
+        // Render bars
+        function renderBars() {
+            const maxValue = Math.max(...currentArray, 1);
+            const barWidth = Math.min(60, 800 / currentArray.length - 10);
+            
+            let barsHtml = '';
+            let indicesHtml = '';
+            
+            currentArray.forEach((value, index) => {
+                const height = (value / maxValue) * 150 + 30;
+                barsHtml += `
+                    <div class="bar" style="height: ${height}px;" data-index="${index}">
+                        <span class="bar-value">${value}</span>
+                    </div>
+                `;
+                indicesHtml += `<div class="index">${index}</div>`;
+            });
+            
+            arrayBars.innerHTML = barsHtml;
+            arrayIndices.innerHTML = indicesHtml;
+        }
+
+        // Update bar states based on step
+        function updateBarStates(step) {
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach(bar => bar.classList.remove('comparing', 'swapping', 'sorted'));
+            
+            if (step) {
+                if (step.comparing) {
+                    step.comparing.forEach(idx => {
+                        if (bars[idx]) bars[idx].classList.add('comparing');
+                    });
+                }
+                
+                if (step.swapping) {
+                    step.swapping.forEach(idx => {
+                        if (bars[idx]) bars[idx].classList.add('swapping');
+                    });
+                }
+                
+                if (step.sorted) {
+                    step.sorted.forEach(idx => {
+                        if (bars[idx]) bars[idx].classList.add('sorted');
+                    });
+                }
+                
+                if (step.pivot !== undefined && bars[step.pivot]) {
+                    bars[step.pivot].classList.add('swapping');
+                }
+            }
+        }
+
+        // Render steps history
+        function renderStepsHistory() {
+            let html = '';
+            const start = Math.max(0, currentStep - 5);
+            const end = Math.min(steps.length, start + 10);
+            
+            for (let i = start; i < end; i++) {
+                const step = steps[i];
+                html += `
+                    <div class="state-row">
+                        <span class="state-step">#${i}</span>
+                        <span class="state-array">
+                            ${step.array.map((val, idx) => 
+                                `<span class="state-item ${idx === currentStep ? 'current' : ''}">${val}</span>`
+                            ).join('')}
+                        </span>
+                        <span class="state-desc">${step.description || ''}</span>
+                    </div>
+                `;
+            }
+            
+            statesGrid.innerHTML = html || '<div class="state-row">No steps yet</div>';
+            stepCount.textContent = `${steps.length} steps`;
+        }
+
+        // Apply step
+        function applyStep(stepIndex) {
+            if (stepIndex >= 0 && stepIndex < steps.length) {
+                const step = steps[stepIndex];
+                currentArray = [...step.array];
+                renderBars();
+                updateBarStates(step);
+                stepCounter.textContent = `${stepIndex}/${steps.length - 1}`;
+                stepDescription.textContent = step.description || '';
+            }
+        }
+
+        // Next step
+        function nextStep() {
+            if (steps.length === 0) {
+                generateSteps();
+            }
+            
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                applyStep(currentStep);
+                renderStepsHistory();
+            } else {
+                // Reached the end
+                if (isPlaying) {
+                    stopPlay();
+                }
+            }
+        }
+
+        // Previous step
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                applyStep(currentStep);
+                renderStepsHistory();
+            }
+        }
+
+        // Toggle play
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                startPlay();
+            }
+        }
+
+        // Start playing
+        function startPlay() {
+            if (steps.length === 0) {
+                generateSteps();
+            }
+            
+            isPlaying = true;
+            startBtn.innerHTML = '<i class="fa-regular fa-pause"></i> PAUSE';
+            
+            timer = setInterval(() => {
+                if (currentStep < steps.length - 1) {
+                    nextStep();
+                } else {
+                    stopPlay();
+                }
+            }, speed);
+        }
+
+        // Stop playing
+        function stopPlay() {
+            isPlaying = false;
+            startBtn.innerHTML = '<i class="fa-regular fa-play"></i> START';
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        // Reset
+        function reset() {
+            stopPlay();
+            currentArray = [...originalArray];
+            steps = [];
+            currentStep = 0;
+            renderBars();
+            updateBarStates(null);
+            stepCounter.textContent = '0/0';
+            stepDescription.textContent = 'Ready to start sorting';
+            statesGrid.innerHTML = '<div class="state-row"><span class="state-step">#0</span><span class="state-array">Initial array</span></div>';
+            stepCount.textContent = '0 steps';
+        }
+
+        // Update complexity info
+        function updateComplexityInfo() {
+            const algo = algorithms[currentAlgo];
+            complexityInfo.innerHTML = `
+                <div class="complexity-item">
+                    <div class="complexity-label">BEST</div>
+                    <div class="complexity-value">${algo.complexity.best}</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">AVERAGE</div>
+                    <div class="complexity-value">${algo.complexity.average}</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">WORST</div>
+                    <div class="complexity-value">${algo.complexity.worst}</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">SPACE</div>
+                    <div class="complexity-value">${algo.complexity.space}</div>
+                </div>
+            `;
+        }
+
+        // Start
+        init();
+    </script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
